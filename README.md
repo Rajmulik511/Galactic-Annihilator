@@ -1,7 +1,4 @@
 🚀 Galactic Annihilator: A Prompt Engineering Case Study <br><br>
-Try Here : <a href="https://rajmulik511.github.io/Galactic-Annihilator/" target="_blank">  Game </a> (Mobile/Web Compatible)<br><br>
-
-
 <p align="center">
   
 <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5 Badge"/>
@@ -13,6 +10,7 @@ Try Here : <a href="https://rajmulik511.github.io/Galactic-Annihilator/" target=
 <p align="center">
 A retro-style arcade shooter built entirely through a conversational AI development process with <strong>Google Gemini</strong>.
 </p>
+Try Here : <a href="https://rajmulik511.github.io/Galactic-Annihilator/" target="_blank">  Game </a> (Mobile/Web Compatible)<br><br>
 
 ✨ Features
 The result of this iterative process is a complete game with the following features:
