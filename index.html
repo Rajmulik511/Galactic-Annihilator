@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Galactic Annihilator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+        canvas {
+            background-color: #000;
+            display: block;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            outline: none;
+            width: 100%;
+            height: 100%;
+        }
+        #backgroundCanvas {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            background-color: #000;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        .text-glow {
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.8), 0 0 10px rgba(0, 255, 255, 0.6);
+        }
+        .control-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: rgba(0, 255, 255, 0.2);
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            user-select: none;
+        }
+        .control-button:active {
+            background-color: rgba(0, 255, 255, 0.4);
+        }
+        .selectable-ship {
+            border: 4px solid transparent;
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
+        .selectable-ship.selected {
+            border-color: #00ffff;
+            transform: scale(1.1);
+            background-color: rgba(0, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center h-screen m-0 p-4">
+
+    <canvas id="backgroundCanvas"></canvas>
+
+    <!-- Name Entry Screen -->
+    <div id="nameEntryScreen" class="absolute inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center text-center z-30">
+        <h1 class="text-5xl md:text-6xl font-bold text-cyan-300 text-glow mb-10 tracking-widest leading-tight">GALACTIC<br>ANNIHILATOR</h1>
+        <h2 class="text-3xl md:text-4xl font-bold text-red-300 mb-10">Enter Your Name</h2>
+        <input type="text" id="playerNameInput" class="bg-gray-800 border-2 border-cyan-500 text-white text-center text-xl rounded-lg p-2 w-64 mb-8 focus:outline-none focus:ring-2 focus:ring-cyan-300" placeholder="The Raj">
+        <button id="continueButton" class="bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold py-3 px-8 rounded-lg text-xl shadow-lg">
+            Continue
+        </button>
+    </div>
+
+    <!-- Ship Selection Screen (initially hidden) -->
+    <div id="shipSelectionScreen" class="absolute inset-0 bg-black bg-opacity-90 flex flex-col items-center justify-center text-center z-20 hidden">
+        <h2 class="text-3xl md:text-4xl font-bold text-cyan-300 text-glow mb-8">Select Your Spaceship</h2>
+                <div class="grid grid-cols-2 gap-6 mb-8">
+            <img src="SpaceshipImages/SpaceShip01.png" class="selectable-ship ..." data-ship-src="SpaceshipImages/SpaceShip01.png">
+            <img src="SpaceshipImages/SpaceShip02.png" class="selectable-ship ..." data-ship-src="SpaceshipImages/SpaceShip02.png">
+            <img src="SpaceshipImages/SpaceShip03.png" class="selectable-ship ..." data-ship-src="SpaceshipImages/SpaceShip03.png">
+            <img src="SpaceshipImages/SpaceShip04.png" class="selectable-ship ..." data-ship-src="SpaceshipImages/SpaceShip04.png">
+        </div>
+        <button id="startGameButton" class="bg-gray-600 text-gray-400 font-bold py-3 px-8 rounded-lg text-xl shadow-lg cursor-not-allowed" disabled>
+            Start Game
+        </button>
+    </div>
+
+    <!-- Main wrapper for game and controls (initially hidden) -->
+    <div id="game-wrapper" class="flex flex-col items-center w-full h-full max-h-[90vh] max-w-[45vh] hidden">
+        <div id="game-container" class="relative w-full flex-grow">
+            <canvas id="gameCanvas"></canvas>
+            <div id="ui-layer" class="absolute top-0 left-0 w-full h-full p-3 flex flex-col justify-between pointer-events-none">
+                <div class="flex justify-between">
+                    <h1 class="text-lg md:text-xl font-bold text-cyan-300 text-glow">Galactic Annihilator</h1>
+                    <div id="score" class="text-lg md:text-xl font-bold text-cyan-300 text-glow">Score: 0</div>
+                </div>
+                <div class="text-center h-6">
+                    <div id="powerupStatus" class="text-xl font-bold text-yellow-300 text-glow"></div>
+                    <div id="difficultyStatus" class="text-xl font-bold text-red-500 text-glow"></div>
+                </div>
+            </div>
+            <div id="gameOverScreen" class="absolute inset-0 bg-black bg-opacity-75 flex-col items-center justify-center text-center hidden">
+                <h2 class="text-4xl md:text-5xl font-bold text-red-500 text-glow mb-4">GAME OVER</h2>
+                <p id="finalScore" class="text-xl md:text-2xl mb-2">Your Score: 0</p>
+                <p id="highScoreDisplay" class="text-xl md:text-2xl text-cyan-300 mb-8">High Score: 0</p>
+                <button id="restartButton" class="bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold py-3 px-8 rounded-lg text-lg shadow-lg">
+                    Play Again
+                </button>
+            </div>
+        </div>
+        <div id="mobile-controls" class="flex justify-between w-full mt-4 px-4 md:hidden">
+            <button id="leftButton" class="control-button">&#9664;</button>
+            <button id="rightButton" class="control-button">&#9654;</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Screen Elements ---
+            const nameEntryScreen = document.getElementById('nameEntryScreen');
+            const shipSelectionScreen = document.getElementById('shipSelectionScreen');
+            const gameWrapper = document.getElementById('game-wrapper');
+            
+            // --- Input Elements ---
+            const playerNameInput = document.getElementById('playerNameInput');
+            const continueButton = document.getElementById('continueButton');
+            const selectableShips = document.querySelectorAll('.selectable-ship');
+            const startGameButton = document.getElementById('startGameButton');
+            const restartButton = document.getElementById('restartButton');
+            
+            // --- Game Elements ---
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const container = document.getElementById('game-container');
+            const scoreEl = document.getElementById('score');
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            const finalScoreEl = document.getElementById('finalScore');
+            const highScoreDisplay = document.getElementById('highScoreDisplay');
+            const leftButton = document.getElementById('leftButton');
+            const rightButton = document.getElementById('rightButton');
+            const powerupStatus = document.getElementById('powerupStatus');
+            const difficultyStatus = document.getElementById('difficultyStatus');
+            
+            // --- Background Animation Elements ---
+            const backgroundCanvas = document.getElementById('backgroundCanvas');
+            const bgCtx = backgroundCanvas.getContext('2d');
+            let bgAnimationId;
+            let stars = [];
+            
+            // --- Game State ---
+            let playerName = "Player";
+            let highScore = localStorage.getItem('galacticAnnihilatorHighScore') || 0;
+            let selectedShipSrc = null;
+            const playerImage = new Image();
+            const enemyImage = new Image();
+            let animationFrameId;
+            let gameRunning = true;
+            let keys = {};
+
+            // --- Background Animation Logic ---
+            function resizeBackgroundCanvas() {
+                backgroundCanvas.width = window.innerWidth;
+                backgroundCanvas.height = window.innerHeight;
+            }
+
+            function backgroundLoop() {
+                bgCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+                if (Math.random() < 0.5) {
+                    stars.push({ x: Math.random() * backgroundCanvas.width, y: backgroundCanvas.height, size: Math.random() * 2 + 1, speed: Math.random() * 3 + 2 });
+                }
+                for (let i = stars.length - 1; i >= 0; i--) {
+                    stars[i].y -= stars[i].speed;
+                    if (stars[i].y < 0) {
+                        stars.splice(i, 1);
+                    } else {
+                        bgCtx.fillStyle = 'white';
+                        bgCtx.fillRect(stars[i].x, stars[i].y, stars[i].size, stars[i].size * 3);
+                    }
+                }
+                bgAnimationId = requestAnimationFrame(backgroundLoop);
+            }
+
+            // --- Initial Flow Logic ---
+            continueButton.addEventListener('click', () => {
+                const name = playerNameInput.value.trim();
+                if (name) playerName = name;
+                cancelAnimationFrame(bgAnimationId);
+                backgroundCanvas.style.display = 'none';
+                nameEntryScreen.classList.add('hidden');
+                shipSelectionScreen.classList.remove('hidden');
+            });
+
+            selectableShips.forEach(ship => {
+                ship.addEventListener('click', () => {
+                    selectableShips.forEach(s => s.classList.remove('selected'));
+                    ship.classList.add('selected');
+                    selectedShipSrc = ship.dataset.shipSrc;
+                    startGameButton.disabled = false;
+                    startGameButton.classList.remove('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
+                    startGameButton.classList.add('bg-cyan-500', 'hover:bg-cyan-400', 'text-gray-900');
+                });
+            });
+
+            startGameButton.addEventListener('click', () => {
+                if (!selectedShipSrc) return;
+                startGameButton.textContent = 'Loading Assets...';
+                startGameButton.disabled = true;
+                playerImage.src = selectedShipSrc;
+                playerImage.onload = () => {
+                    enemyImage.src = 'SpaceshipImages/EvilShip02.png';
+                    enemyImage.onload = () => {
+                        shipSelectionScreen.classList.add('hidden');
+                        gameWrapper.classList.remove('hidden');
+                        requestAnimationFrame(() => {
+                            resizeCanvas();
+                            init();
+                        });
+                    };
+                    enemyImage.onerror = () => {
+                        console.error('Failed to load enemy image:', enemyImage.src);
+                        startGameButton.textContent = 'Error: Check Enemy Image Path';
+                    };
+                };
+                playerImage.onerror = () => {
+                    console.error('Failed to load player image:', playerImage.src);
+                    startGameButton.textContent = 'Error: Check Player Image Path';
+                };
+            });
+
+            // --- Game Configuration & State Variables ---
+            const BASE_SHOOT_COOLDOWN = 250;
+            let config = {
+                player: { width: 50, height: 45, speed: 7 },
+                bullet: { width: 4, height: 12, speed: 10, color: '#ffffff' },
+                enemy: { width: 40, height: 32, baseSpeed: 2, fastSpeed: 4, spawnInterval: 1000 },
+                powerUp: { size: 20, speed: 2, duration: 7000, chance: 0.15 },
+                shootCooldown: BASE_SHOOT_COOLDOWN
+            };
+            let player, bullets, enemies, powerUps, score, lastShotTime, enemySpawnTimer, difficultyIncreased;
+            let isMovingLeft = false, isMovingRight = false;
+            let rapidFireTimeout;
+
+            function resizeCanvas() {
+                const { width, height } = container.getBoundingClientRect();
+                canvas.width = width;
+                canvas.height = height;
+                if (player) {
+                    player.x = (canvas.width - config.player.width) / 2;
+                    player.y = canvas.height - config.player.height - 20;
+                }
+            }
+
+            function init() {
+                gameRunning = true;
+                gameOverScreen.classList.add('hidden');
+                gameOverScreen.classList.remove('flex');
+                player = { x: (canvas.width - config.player.width) / 2, y: canvas.height - config.player.height - 20, width: config.player.width, height: config.player.height, speed: config.player.speed };
+                bullets = [];
+                enemies = [];
+                powerUps = [];
+                keys = {};
+                score = 0;
+                lastShotTime = 0;
+                isMovingLeft = false;
+                isMovingRight = false;
+                scoreEl.textContent = 'Score: 0';
+                config.shootCooldown = BASE_SHOOT_COOLDOWN;
+                config.enemy.speed = config.enemy.baseSpeed; // Reset enemy speed
+                difficultyIncreased = false; // Reset difficulty flag
+                powerupStatus.textContent = '';
+                difficultyStatus.textContent = '';
+                clearTimeout(rapidFireTimeout);
+                if (enemySpawnTimer) clearInterval(enemySpawnTimer);
+                enemySpawnTimer = setInterval(spawnEnemy, config.enemy.spawnInterval);
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                gameLoop();
+            }
+
+            window.addEventListener('keydown', (e) => {
+                if (['ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+                keys[e.code] = true;
+            });
+            window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+            window.addEventListener('resize', () => {
+                resizeBackgroundCanvas();
+                if (!gameWrapper.classList.contains('hidden')) resizeCanvas();
+            });
+            restartButton.addEventListener('click', init);
+            
+            function addControlListeners(button, direction) {
+                const start = (e) => { e.preventDefault(); if (direction === 'left') isMovingLeft = true; else isMovingRight = true; };
+                const end = (e) => { e.preventDefault(); if (direction === 'left') isMovingLeft = false; else isMovingRight = false; };
+                button.addEventListener('mousedown', start);
+                button.addEventListener('touchstart', start);
+                button.addEventListener('mouseup', end);
+                button.addEventListener('touchend', end);
+                button.addEventListener('mouseleave', end);
+            }
+            addControlListeners(leftButton, 'left');
+            addControlListeners(rightButton, 'right');
+
+            function drawPlayer() { ctx.drawImage(playerImage, player.x, player.y, player.width, player.height); }
+            function drawBullets() {
+                ctx.fillStyle = config.bullet.color;
+                bullets.forEach(bullet => { ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height); });
+            }
+            function drawEnemies() {
+                enemies.forEach(enemy => { ctx.drawImage(enemyImage, enemy.x, enemy.y, enemy.width, enemy.height); });
+            }
+            function drawPowerUps() {
+                ctx.save();
+                ctx.font = `${config.powerUp.size}px Orbitron`;
+                ctx.fillStyle = '#ffd700';
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 15;
+                powerUps.forEach(powerUp => {
+                    ctx.fillText('R', powerUp.x, powerUp.y);
+                });
+                ctx.restore();
+            }
+
+            function updatePlayer() {
+                if ((keys['ArrowLeft'] || isMovingLeft) && player.x > 0) { player.x -= player.speed; }
+                if ((keys['ArrowRight'] || isMovingRight) && player.x < canvas.width - player.width) { player.x += player.speed; }
+            }
+            function updateBullets() {
+                const now = Date.now();
+                if (now - lastShotTime > config.shootCooldown) {
+                    bullets.push({ x: player.x + player.width / 2 - config.bullet.width / 2, y: player.y, width: config.bullet.width, height: config.bullet.height, speed: config.bullet.speed });
+                    lastShotTime = now;
+                }
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    bullets[i].y -= bullets[i].speed;
+                    if (bullets[i].y < -bullets[i].height) { bullets.splice(i, 1); }
+                }
+            }
+            function spawnEnemy() {
+                if (!gameRunning) return;
+                const speed = difficultyIncreased ? config.enemy.fastSpeed : config.enemy.baseSpeed;
+                enemies.push({ x: Math.random() * (canvas.width - config.enemy.width), y: -config.enemy.height, width: config.enemy.width, height: config.enemy.height, speed: speed });
+            }
+            function updateEnemies() {
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    enemies[i].y += enemies[i].speed;
+                    if (enemies[i].y > canvas.height) {
+                        gameOver();
+                        break;
+                    }
+                }
+            }
+            function updatePowerUps() {
+                for (let i = powerUps.length - 1; i >= 0; i--) {
+                    powerUps[i].y += powerUps[i].speed;
+                    if (powerUps[i].y > canvas.height) {
+                        powerUps.splice(i, 1);
+                    }
+                }
+            }
+            
+            function checkCollisions() {
+                // Bullets vs Enemies
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    for (let j = enemies.length - 1; j >= 0; j--) {
+                        if (bullets[i] && enemies[j] && bullets[i].x < enemies[j].x + enemies[j].width && bullets[i].x + bullets[i].width > enemies[j].x && bullets[i].y < enemies[j].y + enemies[j].height && bullets[i].y + bullets[i].height > enemies[j].y) {
+                            if (Math.random() < config.powerUp.chance) {
+                                powerUps.push({ x: enemies[j].x, y: enemies[j].y, size: config.powerUp.size, speed: config.powerUp.speed });
+                            }
+                            bullets.splice(i, 1);
+                            enemies.splice(j, 1);
+                            score += 10;
+                            scoreEl.textContent = `Score: ${score}`;
+                            
+                            if (score > 350 && !difficultyIncreased) {
+                                difficultyIncreased = true;
+                                difficultyStatus.textContent = 'SPEED INCREASED!';
+                                setTimeout(() => { difficultyStatus.textContent = ''; }, 3000);
+                            }
+                            break; 
+                        }
+                    }
+                }
+                // Player vs Enemies
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    if (player.x < enemies[i].x + enemies[i].width && player.x + player.width > enemies[i].x && player.y < enemies[i].y + enemies[i].height && player.y + player.height > enemies[i].y) {
+                        gameOver();
+                    }
+                }
+                // Player vs Power-ups
+                for (let i = powerUps.length - 1; i >= 0; i--) {
+                    const p = powerUps[i];
+                    if (player.x < p.x + p.size && player.x + player.width > p.x && player.y < p.y + p.size && player.y + player.height > p.y) {
+                        powerUps.splice(i, 1);
+                        activateRapidFire();
+                    }
+                }
+            }
+
+            function activateRapidFire() {
+                clearTimeout(rapidFireTimeout);
+                config.shootCooldown = BASE_SHOOT_COOLDOWN / 2;
+                powerupStatus.textContent = 'RAPID FIRE';
+                rapidFireTimeout = setTimeout(() => {
+                    config.shootCooldown = BASE_SHOOT_COOLDOWN;
+                    powerupStatus.textContent = '';
+                }, config.powerUp.duration);
+            }
+
+            function gameOver() {
+                if (!gameRunning) return;
+                gameRunning = false;
+                cancelAnimationFrame(animationFrameId);
+                clearInterval(enemySpawnTimer);
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('galacticAnnihilatorHighScore', highScore);
+                }
+                finalScoreEl.textContent = `${playerName}'s Score: ${score}`;
+                highScoreDisplay.textContent = `High Score: ${highScore}`;
+                gameOverScreen.classList.remove('hidden');
+                gameOverScreen.classList.add('flex');
+            }
+
+            function gameLoop() {
+                if (!gameRunning) return;
+                updatePlayer();
+                updateBullets();
+                updateEnemies();
+                updatePowerUps();
+                checkCollisions();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawPlayer();
+                drawBullets();
+                drawEnemies();
+                drawPowerUps();
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+            
+            resizeBackgroundCanvas();
+            backgroundLoop();
+        });
+    </script>
+</body>
+</html>
