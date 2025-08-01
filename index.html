@@ -66,8 +66,8 @@
     <canvas id="backgroundCanvas"></canvas>
 
     <!-- Name Entry Screen -->
-    <div id="nameEntryScreen" class="absolute inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center text-center z-30">
-        <h1 class="text-5xl md:text-6xl font-bold text-cyan-300 text-glow mb-10 tracking-widest leading-tight">GALACTIC<br>ANNIHILATOR</h1>
+    <div id="nameEntryScreen" class="absolute inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center text-center z-30 pt-8 md:pt-16">
+        <h1 class="text-3xl md:text-4xl font-bold text-cyan-300 text-glow mb-6 tracking-widest leading-tight" style="line-height:1.1; word-break:break-word; max-width:90vw;">GALACTIC<br>ANNIHILATOR</h1>
         <h2 class="text-3xl md:text-4xl font-bold text-red-300 mb-10">Enter Your Name</h2>
         <input type="text" id="playerNameInput" class="bg-gray-800 border-2 border-cyan-500 text-white text-center text-xl rounded-lg p-2 w-64 mb-8 focus:outline-none focus:ring-2 focus:ring-cyan-300" placeholder="The Raj">
         <button id="continueButton" class="bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold py-3 px-8 rounded-lg text-xl shadow-lg">
@@ -374,7 +374,7 @@
                             score += 10;
                             scoreEl.textContent = `Score: ${score}`;
                             
-                            if (score > 350 && !difficultyIncreased) {
+                            if (score > 150 && !difficultyIncreased) {
                                 difficultyIncreased = true;
                                 difficultyStatus.textContent = 'SPEED INCREASED!';
                                 setTimeout(() => { difficultyStatus.textContent = ''; }, 3000);
