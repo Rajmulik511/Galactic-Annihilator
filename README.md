@@ -1,5 +1,7 @@
 🚀 Galactic Annihilator: A Prompt Engineering Case Study <br><br>
-Try Here : https://rajmulik511.github.io/Galactic-Annihilator/ (Mobile/Web Compatible)<br><br>
+Try Here : <a href="https://rajmulik511.github.io/Galactic-Annihilator/" target="_blank">  Game </a> (Mobile/Web Compatible)<br><br>
+
+
 <p align="center">
   
 <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5 Badge"/>
